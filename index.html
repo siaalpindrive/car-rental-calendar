@@ -1,120 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Rental Calendar</title>
-
-    <!-- Локальные файлы CSS FullCalendar -->
-    <link href="css/main.min.css" rel="stylesheet">
-    <link href="css/daygrid.min.css" rel="stylesheet">
-    <link href="css/interaction.min.css" rel="stylesheet">
-
-    <!-- jQuery (необходимо для работы FullCalendar) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Локальные файлы JS FullCalendar -->
-    <script src="js/main.min.js"></script>
-    <script src="js/daygrid.min.js"></script>
-    <script src="js/interaction.min.js"></script>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-
-        .container {
-            width: 80%;
-            margin: 0 auto;
-            padding-top: 50px;
-        }
-
-        #calendar {
-            margin: 20px 0;
-        }
-
-        .rental-info {
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            text-align: center;
-        }
-
-        .rental-info button {
-            background-color: red;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
-
-        .rental-info button:hover {
-            background-color: darkred;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Календарь аренды машин</title>
+  <link href="index.global.css" rel="stylesheet">
+  <script src="index.global.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .car-list {
+      margin-bottom: 20px;
+    }
+    .calendar-container {
+      max-width: 900px;
+      margin: auto;
+    }
+  </style>
 </head>
 <body>
+  <h1>Календарь аренды машин</h1>
 
-    <div class="container">
-        <h1>Car Rental Calendar</h1>
-        
-        <div id="calendar"></div>
-    </div>
+  <div class="car-list">
+    <label for="carSelect">Выберите машину:</label>
+    <select id="carSelect">
+      <option value="7515">7515</option>
+      <option value="4604">4604</option>
+      <option value="2849">2849</option>
+      <option value="6777">6777</option>
+      <option value="6800">6800</option>
+    </select>
+  </div>
 
-    <script>
-        $(document).ready(function() {
-            var carRentals = {}; // Store car rentals by date
+  <div class="calendar-container">
+    <div id="calendar"></div>
+  </div>
 
-            $('#calendar').fullCalendar({
-                header: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'month,agendaWeek,agendaDay'
-                },
-                events: function(start, end, timezone, callback) {
-                    var events = [];
-                    // Convert the rental data to FullCalendar events format
-                    for (var date in carRentals) {
-                        events.push({
-                            title: carRentals[date].car,
-                            start: date,
-                            allDay: true,
-                            description: 'Rental booked',
-                            backgroundColor: '#007bff',
-                            borderColor: '#007bff',
-                            textColor: '#ffffff'
-                        });
-                    }
-                    callback(events);
-                },
-                dayClick: function(date, jsEvent, view) {
-                    var selectedDate = date.format();
-                    var car = prompt("Enter car number (7515, 4604, 2849, 6777, 6800):");
-                    
-                    if (car) {
-                        carRentals[selectedDate] = { car: car }; // Save the car rental
-                        $('#calendar').fullCalendar('renderEvent', {
-                            title: car,
-                            start: selectedDate,
-                            allDay: true,
-                            backgroundColor: '#007bff',
-                            borderColor: '#007bff',
-                            textColor: '#ffffff'
-                        });
-                    }
-                },
-                eventClick: function(event, jsEvent, view) {
-                    if (confirm("Do you want to cancel this rental?")) {
-                        var selectedDate = event.start.format();
-                        delete carRentals[selectedDate]; // Remove the rental
-                        $('#calendar').fullCalendar('removeEvents', event._id);
-                    }
-                }
-            });
-        });
-    </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+      const carSelect = document.getElementById('carSelect');
+
+      // Загружаем события из localStorage
+      const loadEvents = () => {
+        const storedEvents = localStorage.getItem('carEvents');
+        return storedEvents ? JSON.parse(storedEvents) : {
+          '7515': [],
+          '4604': [],
+          '2849': [],
+          '6777': [],
+          '6800': []
+        };
+      };
+
+      // Сохраняем события в localStorage
+      const saveEvents = (events) => {
+        localStorage.setItem('carEvents', JSON.stringify(events));
+      };
+
+      let carEvents = loadEvents();
+
+      // Создание календаря
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        events: carEvents['7515'], // Изначально отображаем события для первой машины
+        selectable: true,
+        select: function (info) {
+          const eventTitle = prompt('Введите название события (например, "Аренда"):', 'Аренда');
+          if (eventTitle) {
+            const newEvent = { title: eventTitle, start: info.startStr, end: info.endStr };
+            carEvents[carSelect.value].push(newEvent); // Добавляем событие для выбранной машины
+            calendar.addEvent(newEvent);
+            saveEvents(carEvents); // Сохраняем данные о бронированиях
+            alert(`Машина ${carSelect.value} забронирована с ${info.startStr} по ${info.endStr} на ${eventTitle}`);
+          }
+        },
+        eventClick: function (info) {
+          // Подтверждение отмены бронирования
+          if (confirm(`Вы действительно хотите отменить бронирование машины ${carSelect.value} на ${info.event.start.toISOString().split('T')[0]}?`)) {
+            // Удаляем событие из календаря
+            info.event.remove();
+            
+            // Удаляем событие из массива событий для текущей машины
+            carEvents[carSelect.value] = carEvents[carSelect.value].filter(event => event.start !== info.event.startStr);
+
+            // Сохраняем обновленные данные в localStorage
+            saveEvents(carEvents);
+            alert(`Бронирование на ${info.event.start.toISOString().split('T')[0]} отменено.`);
+          } else {
+            // Возможность редактировать название события
+            const newTitle = prompt('Введите новое название события:', info.event.title);
+            if (newTitle && newTitle !== info.event.title) {
+              info.event.setProp('title', newTitle); // Изменяем название события в календаре
+              carEvents[carSelect.value] = carEvents[carSelect.value].map(event => 
+                event.start === info.event.startStr ? { ...event, title: newTitle } : event
+              );
+              saveEvents(carEvents); // Сохраняем обновленные данные
+            }
+          }
+        }
+      });
+
+      calendar.render();
+
+      // При смене машины обновляем календарь
+      carSelect.addEventListener('change', function () {
+        calendar.removeAllEvents();
+        calendar.addEventSource(carEvents[carSelect.value]);
+      });
+
+    });
+  </script>
 </body>
 </html>
