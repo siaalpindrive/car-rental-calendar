@@ -3,115 +3,102 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Календарь аренды машин</title>
-  <link href="index.global.css" rel="stylesheet">
-  <script src="index.global.min.js"></script>
+  <title>Car Rental Calendar</title>
+  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core/main.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid/main.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/list/main.css" rel="stylesheet">
   <style>
+    /* Простейшие стили для адаптации */
     body {
       font-family: Arial, sans-serif;
-      margin: 20px;
+      margin: 0;
+      padding: 0;
     }
-    .car-list {
-      margin-bottom: 20px;
-    }
+
     .calendar-container {
-      max-width: 900px;
-      margin: auto;
+      width: 100%;
+      max-width: 1000px;
+      margin: 20px auto;
     }
+
+    /* Стиль для кнопок */
+    .fc-daygrid-day {
+      cursor: pointer;
+    }
+
+    .fc-event {
+      background-color: #2a9d8f;
+      color: white;
+    }
+
+    /* Медиа-запросы для мобильных устройств */
+    @media (max-width: 768px) {
+      body {
+        font-size: 14px;
+      }
+
+      .calendar-container {
+        width: 100%;
+      }
+
+      .fc-daygrid-day {
+        padding: 8px;
+      }
+
+      .fc-event {
+        font-size: 12px;
+      }
+    }
+
   </style>
 </head>
 <body>
-  <h1>Календарь аренды машин</h1>
-
-  <div class="car-list">
-    <label for="carSelect">Выберите машину:</label>
-    <select id="carSelect">
-      <option value="7515">7515</option>
-      <option value="4604">4604</option>
-      <option value="2849">2849</option>
-      <option value="6777">6777</option>
-      <option value="6800">6800</option>
-    </select>
-  </div>
 
   <div class="calendar-container">
     <div id="calendar"></div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/list/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction/main.js"></script>
+
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const calendarEl = document.getElementById('calendar');
-      const carSelect = document.getElementById('carSelect');
+    // Массив для хранения информации о бронированиях
+    let bookings = {};
 
-      // Загружаем события из localStorage
-      const loadEvents = () => {
-        const storedEvents = localStorage.getItem('carEvents');
-        return storedEvents ? JSON.parse(storedEvents) : {
-          '7515': [],
-          '4604': [],
-          '2849': [],
-          '6777': [],
-          '6800': []
-        };
-      };
-
-      // Сохраняем события в localStorage
-      const saveEvents = (events) => {
-        localStorage.setItem('carEvents', JSON.stringify(events));
-      };
-
-      let carEvents = loadEvents();
-
-      // Создание календаря
-      const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        events: carEvents['7515'], // Изначально отображаем события для первой машины
-        selectable: true,
-        select: function (info) {
-          const eventTitle = prompt('Введите название события (например, "Аренда"):', 'Аренда');
-          if (eventTitle) {
-            const newEvent = { title: eventTitle, start: info.startStr, end: info.endStr };
-            carEvents[carSelect.value].push(newEvent); // Добавляем событие для выбранной машины
-            calendar.addEvent(newEvent);
-            saveEvents(carEvents); // Сохраняем данные о бронированиях
-            alert(`Машина ${carSelect.value} забронирована с ${info.startStr} по ${info.endStr} на ${eventTitle}`);
-          }
-        },
-        eventClick: function (info) {
-          // Подтверждение отмены бронирования
-          if (confirm(`Вы действительно хотите отменить бронирование машины ${carSelect.value} на ${info.event.start.toISOString().split('T')[0]}?`)) {
-            // Удаляем событие из календаря
-            info.event.remove();
-            
-            // Удаляем событие из массива событий для текущей машины
-            carEvents[carSelect.value] = carEvents[carSelect.value].filter(event => event.start !== info.event.startStr);
-
-            // Сохраняем обновленные данные в localStorage
-            saveEvents(carEvents);
-            alert(`Бронирование на ${info.event.start.toISOString().split('T')[0]} отменено.`);
-          } else {
-            // Возможность редактировать название события
-            const newTitle = prompt('Введите новое название события:', info.event.title);
-            if (newTitle && newTitle !== info.event.title) {
-              info.event.setProp('title', newTitle); // Изменяем название события в календаре
-              carEvents[carSelect.value] = carEvents[carSelect.value].map(event => 
-                event.start === info.event.startStr ? { ...event, title: newTitle } : event
-              );
-              saveEvents(carEvents); // Сохраняем обновленные данные
-            }
-          }
+    const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+      plugins: ['dayGrid', 'interaction'],
+      events: function(fetchInfo, successCallback, failureCallback) {
+        const events = [];
+        for (const date in bookings) {
+          events.push({
+            title: bookings[date],
+            start: date,
+            end: date,
+            allDay: true,
+          });
         }
-      });
-
-      calendar.render();
-
-      // При смене машины обновляем календарь
-      carSelect.addEventListener('change', function () {
-        calendar.removeAllEvents();
-        calendar.addEventSource(carEvents[carSelect.value]);
-      });
-
+        successCallback(events);
+      },
+      dateClick: function(info) {
+        const date = info.dateStr;
+        const booking = prompt('Введите название аренды:', bookings[date] || '');
+        if (booking !== null) {
+          if (booking === '') {
+            delete bookings[date]; // Удалить аренду, если введено пустое значение
+          } else {
+            bookings[date] = booking; // Добавить или изменить аренду
+          }
+          calendar.refetchEvents(); // Обновить календарь
+        }
+      },
+      editable: true,
+      droppable: true
     });
+
+    calendar.render();
   </script>
+
 </body>
 </html>
