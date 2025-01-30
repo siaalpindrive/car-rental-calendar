@@ -78,7 +78,7 @@
         initialView: 'dayGridMonth',
         events: carEvents['7515'], // Изначально отображаем события для первой машины
         selectable: true,
-        touch: true,  // Включаем поддержку тачскрина
+        touch: true, // Включаем поддержку тачскрина
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
@@ -117,6 +117,24 @@
               saveEvents(carEvents); // Сохраняем обновленные данные
             }
           }
+        },
+        eventMouseEnter: function(info) {
+          // Обработка нажатия на событие
+          if (info.event.title) {
+            info.el.style.cursor = 'pointer';
+          }
+        },
+        eventMouseLeave: function(info) {
+          // Убираем курсор
+          info.el.style.cursor = 'auto';
+        },
+        touch: {
+          // Увеличиваем области для тач-событий
+          eventClick: function(info) {
+            info.event.remove();
+            carEvents[carSelect.value] = carEvents[carSelect.value].filter(event => event.start !== info.event.startStr);
+            saveEvents(carEvents);
+          }
         }
       });
 
@@ -131,4 +149,5 @@
     });
   </script>
 </body>
+</html>
 </html>
