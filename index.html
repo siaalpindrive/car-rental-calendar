@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Календарь аренды машин</title>
   <link href="index.global.css" rel="stylesheet">
   <script src="index.global.min.js"></script>
@@ -20,14 +20,6 @@
     }
     .fc-daygrid-day {
       touch-action: manipulation; /* Обработка касаний */
-    }
-    .fc-daygrid-day-top {
-      pointer-events: auto; /* Разрешение на клик по дням */
-    }
-    /* Убедимся, что контейнер календаря может расширяться */
-    #calendar {
-      max-width: 100%;
-      overflow: hidden;
     }
   </style>
 </head>
@@ -78,12 +70,6 @@
         initialView: 'dayGridMonth',
         events: carEvents['7515'], // Изначально отображаем события для первой машины
         selectable: true,
-        touch: true, // Включаем поддержку тачскрина
-        headerToolbar: {
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
         select: function (info) {
           const eventTitle = prompt('Введите название события (например, "Аренда"):', 'Аренда');
           if (eventTitle) {
@@ -117,24 +103,6 @@
               saveEvents(carEvents); // Сохраняем обновленные данные
             }
           }
-        },
-        eventMouseEnter: function(info) {
-          // Обработка нажатия на событие
-          if (info.event.title) {
-            info.el.style.cursor = 'pointer';
-          }
-        },
-        eventMouseLeave: function(info) {
-          // Убираем курсор
-          info.el.style.cursor = 'auto';
-        },
-        touch: {
-          // Увеличиваем области для тач-событий
-          eventClick: function(info) {
-            info.event.remove();
-            carEvents[carSelect.value] = carEvents[carSelect.value].filter(event => event.start !== info.event.startStr);
-            saveEvents(carEvents);
-          }
         }
       });
 
@@ -149,5 +117,4 @@
     });
   </script>
 </body>
-</html>
 </html>
