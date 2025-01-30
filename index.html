@@ -1,104 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Car Rental Calendar</title>
-  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.5/main.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.5/main.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/list@6.1.5/main.min.css" rel="stylesheet">
-  <style>
-    /* Простейшие стили для адаптации */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Rental Calendar</title>
+    
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.5/main.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.5/main.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.5/main.min.css" rel="stylesheet">
+    
+    <!-- jQuery (required for FullCalendar) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.5/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.5/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.5/main.min.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
 
-    .calendar-container {
-      width: 100%;
-      max-width: 1000px;
-      margin: 20px auto;
-    }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding-top: 50px;
+        }
 
-    /* Стиль для кнопок */
-    .fc-daygrid-day {
-      cursor: pointer;
-    }
+        #calendar {
+            margin: 20px 0;
+        }
 
-    .fc-event {
-      background-color: #2a9d8f;
-      color: white;
-    }
+        .rental-info {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+        }
 
-    /* Медиа-запросы для мобильных устройств */
-    @media (max-width: 768px) {
-      body {
-        font-size: 14px;
-      }
+        .rental-info button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
 
-      .calendar-container {
-        width: 100%;
-      }
-
-      .fc-daygrid-day {
-        padding: 8px;
-      }
-
-      .fc-event {
-        font-size: 12px;
-      }
-    }
-
-  </style>
+        .rental-info button:hover {
+            background-color: darkred;
+        }
+    </style>
 </head>
 <body>
 
-  <div class="calendar-container">
-    <div id="calendar"></div>
-  </div>
+    <div class="container">
+        <h1>Car Rental Calendar</h1>
+        
+        <div id="calendar"></div>
+    </div>
 
-  <script type="module">
-    import { Calendar } from 'https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.5/main.min.js';
-    import 'https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.5/main.min.js';
-    import 'https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.5/main.min.js';
+    <script>
+        $(document).ready(function() {
+            var carRentals = {}; // Store car rentals by date
 
-    // Массив для хранения информации о бронированиях
-    let bookings = {};
-
-    const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-      plugins: ['dayGrid', 'interaction'],
-      events: function(fetchInfo, successCallback, failureCallback) {
-        const events = [];
-        for (const date in bookings) {
-          events.push({
-            title: bookings[date],
-            start: date,
-            end: date,
-            allDay: true,
-          });
-        }
-        successCallback(events);
-      },
-      dateClick: function(info) {
-        const date = info.dateStr;
-        const booking = prompt('Введите название аренды:', bookings[date] || '');
-        if (booking !== null) {
-          if (booking === '') {
-            delete bookings[date];  // Удалить аренду, если введено пустое значение
-          } else {
-            bookings[date] = booking;  // Добавить или изменить аренду
-          }
-          calendar.refetchEvents();  // Обновить календарь
-        }
-      },
-      editable: true,
-      droppable: true
-    });
-
-    calendar.render();
-  </script>
-
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,agendaWeek,agendaDay'
+                },
+                events: function(start, end, timezone, callback) {
+                    var events = [];
+                    // Convert the rental data to FullCalendar events format
+                    for (var date in carRentals) {
+                        events.push({
+                            title: carRentals[date].car,
+                            start: date,
+                            allDay: true,
+                            description: 'Rental booked',
+                            backgroundColor: '#007bff',
+                            borderColor: '#007bff',
+                            textColor: '#ffffff'
+                        });
+                    }
+                    callback(events);
+                },
+                dayClick: function(date, jsEvent, view) {
+                    var selectedDate = date.format();
+                    var car = prompt("Enter car number (7515, 4604, 2849, 6777, 6800):");
+                    
+                    if (car) {
+                        carRentals[selectedDate] = { car: car }; // Save the car rental
+                        $('#calendar').fullCalendar('renderEvent', {
+                            title: car,
+                            start: selectedDate,
+                            allDay: true,
+                            backgroundColor: '#007bff',
+                            borderColor: '#007bff',
+                            textColor: '#ffffff'
+                        });
+                    }
+                },
+                eventClick: function(event, jsEvent, view) {
+                    if (confirm("Do you want to cancel this rental?")) {
+                        var selectedDate = event.start.format();
+                        delete carRentals[selectedDate]; // Remove the rental
+                        $('#calendar').fullCalendar('removeEvents', event._id);
+                    }
+                }
+            });
+        });
+    </script>
 </body>
-</html>
 </html>
