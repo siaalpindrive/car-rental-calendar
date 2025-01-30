@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Car Rental Calendar</title>
-  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core/main.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid/main.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/list/main.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.5/main.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.5/main.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/list@6.1.5/main.min.css" rel="stylesheet">
   <style>
     /* Простейшие стили для адаптации */
     body {
@@ -58,12 +58,11 @@
     <div id="calendar"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core/main.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid/main.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/list/main.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction/main.js"></script>
+  <script type="module">
+    import { Calendar } from 'https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.5/main.min.js';
+    import 'https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.5/main.min.js';
+    import 'https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.5/main.min.js';
 
-  <script>
     // Массив для хранения информации о бронированиях
     let bookings = {};
 
@@ -86,11 +85,11 @@
         const booking = prompt('Введите название аренды:', bookings[date] || '');
         if (booking !== null) {
           if (booking === '') {
-            delete bookings[date]; // Удалить аренду, если введено пустое значение
+            delete bookings[date];  // Удалить аренду, если введено пустое значение
           } else {
-            bookings[date] = booking; // Добавить или изменить аренду
+            bookings[date] = booking;  // Добавить или изменить аренду
           }
-          calendar.refetchEvents(); // Обновить календарь
+          calendar.refetchEvents();  // Обновить календарь
         }
       },
       editable: true,
@@ -101,4 +100,5 @@
   </script>
 
 </body>
+</html>
 </html>
