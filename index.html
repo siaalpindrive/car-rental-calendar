@@ -68,6 +68,11 @@
         events: carEvents['7515'], // Изначально отображаем события для первой машины
         selectable: true,
         touch: true, // Включаем поддержку тачскрина
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
         select: function (info) {
           const eventTitle = prompt('Введите название события (например, "Аренда"):', 'Аренда');
           if (eventTitle) {
