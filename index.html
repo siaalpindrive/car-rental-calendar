@@ -18,8 +18,12 @@
       max-width: 900px;
       margin: auto;
     }
-    .fc-daygrid-day {
-      touch-action: manipulation; /* Обработка касаний */
+    /* Дополнительные стили для мобильных устройств */
+    @media (max-width: 600px) {
+      .calendar-container {
+        width: 100%;
+        margin: 0;
+      }
     }
   </style>
 </head>
@@ -103,6 +107,10 @@
               saveEvents(carEvents); // Сохраняем обновленные данные
             }
           }
+        },
+        // Разрешение изменения на мобильных устройствах
+        touch: {
+          clickDelay: 500, // Убираем задержку между касаниями
         }
       });
 
@@ -113,7 +121,6 @@
         calendar.removeAllEvents();
         calendar.addEventSource(carEvents[carSelect.value]);
       });
-
     });
   </script>
 </body>
